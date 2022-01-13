@@ -15,14 +15,15 @@ start :- write('Please enter the length of the first string:'),read(X),
          write('Edits done: '),write(Edits).
 
 c(0,0,Res,Edits) :- Res=0,(string(Edits) -> string_concat(Edits, "replace",Edits2),Edits=Edits2;Edits = "Replace").
-
-c(0,M,Res,Edits) :- M > 0, Res=M,Edits=insert.             % must insert M items
-c(N,0,N,Edits) :- N > 0,Edits=delete.              % must delete N items
+% must insert M items
+c(0,M,Res,Edits) :- M > 0, Res=M,(string(Edits)->string_concat(Edits, "insert",Edits2),Edits=Edits2 ;Edits="Insert").
+% must delete N items
+c(N,0,N,Edits) :- N > 0,(string(Edits)->string_concat(Edits, "insert",Edits2),Edits=Edits2 ;Edits="Insert").
 c(N,M,C,Edits) :- N > 0, M > 0,
 
         N1 is N-1, M1 is M-1,
 
-        c(N1,M,C1,Edits1), C1a is C1+1,       % insert into A
+        c(N1,M,C1,Edits1), C1a is C1+1, write(Edits1), nl,      % insert into A
         c(N,M1,C2,Edits2), C2a is C2+1,    % delete from B
         c(N1,M1,C3,Edits3),                 % replace
          % if the variable B is equal to A,it means that they are currenty the same (COPY, no
@@ -33,6 +34,12 @@ c(N,M,C,Edits) :- N > 0, M > 0,
 
 % if X is less than or equal to Y, then MIN is X. Otherwise, MIN is Y.
 min(X,Y,Z,EditsX,EditsY,EditsZ) :- X =< Y -> Z=X,EditsZ=EditsX ; Z=Y,EditsZ=EditsY.
+
+% example data
+a(1,m). a(2,a). a(3,t).
+b(1,m). b(2,a).
+% to find min, c(7,7,Cost),
+
 
 % example data
 a(1,b). a(2,a). a(3,d).
