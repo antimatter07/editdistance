@@ -11,9 +11,11 @@ Change A into B using 3 operations:
 
 start :- write('Please enter the length of the first string:'),read(X),
          write('Please enter the length of the first string:'), read(Y),
-         c(X,Y,C,Edits),write('Minimum edit ditance cost: '), write(C).
+         c(X,Y,C,Edits),write('Minimum edit ditance cost: '), write(C), nl,
+         write('Edits done: '),write(Edits).
 
-c(0,0,Res,Edits) :- Res=0, Edits=rep.
+c(0,0,Res,Edits) :- Res=0,(string(Edits) -> string_concat(Edits, "replace",Edits2),Edits=Edits2;Edits = "Replace").
+
 c(0,M,Res,Edits) :- M > 0, Res=M,Edits=insert.             % must insert M items
 c(N,0,N,Edits) :- N > 0,Edits=delete.              % must delete N items
 c(N,M,C,Edits) :- N > 0, M > 0,
@@ -33,6 +35,10 @@ c(N,M,C,Edits) :- N > 0, M > 0,
 min(X,Y,Z,EditsX,EditsY,EditsZ) :- X =< Y -> Z=X,EditsZ=EditsX ; Z=Y,EditsZ=EditsY.
 
 % example data
+a(1,b). a(2,a). a(3,d).
+b(1,b). b(2,c).
+% to find min, c(7,7,Cost),
+
 a(1,b). a(2,a).
 b(1,d). b(2,c).
 % to find min, c(7,7,Cost),
