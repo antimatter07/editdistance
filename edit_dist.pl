@@ -1,9 +1,28 @@
  % c(N,M,C) if C is minimum cost of changing a_1...a_N into b_1...b_M
 % :- table c/3.
 %
+%
+%
+% example data
+a(1,a). a(2,b). a(3,c).
 
-start :- write('Please enter the length of the first string:'),read(X),
-         write('Please enter the length of the first string:'), read(Y),
+b(1,a). b(2,z).  b(3,c). b(4,e). b(5,d).
+% to find min, c(7,7,Cost),
+
+displayS1(N) :- a(N,CharReturned),Next is N-1, displayS1(Next), write(CharReturned).
+displayS1(N) :- N==0.
+
+displayS2(M) :- b(M,CharReturned),Next is M-1, displayS2(Next), write(CharReturned).
+displayS2(M) :- M==0.
+
+
+
+
+start :- write('Before proceeding, please make sure you have entered and compiled string 1 and string 2 properly.'),nl,
+         write('Please enter the length of the first string:'),read(X),
+         write('Please enter the length of the second string:'), read(Y),
+         write('String 1: '),displayS1(X),nl,
+         write('String 2: '),displayS2(Y),nl,
          c(X,Y,C,Edits),write('Minimum edit ditance cost: '), write(C), nl,
          write('Edits done: '),write(Edits).
 
@@ -37,13 +56,3 @@ c(N,M,C,Edits) :- N > 0, M > 0,
 
 % if X is less than or equal to Y, then MIN is X. Otherwise, MIN is Y.
 min(X,Y,Z,EditsX,EditsY,EditsZ) :- X =< Y -> Z=X,EditsZ=EditsX ; Z=Y,EditsZ=EditsY.
-
-% example data
-a(1,a). a(2,b). a(3,c).
-
-b(1,a). b(2,z).  b(3,c). b(4,e). b(5,d).
-% to find min, c(7,7,Cost),
-
-
-% if X is less than or equal to Y, then MIN is X. Otherwise, MIN is Y.
- % to find min, c(7,7,Cost),
