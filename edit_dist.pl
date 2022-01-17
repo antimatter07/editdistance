@@ -1,58 +1,90 @@
- % c(N,M,C) if C is minimum cost of changing a_1...a_N into b_1...b_M
-% :- table c/3.
+% ********************
+% Name: Matthew James D. Villarica
+% Language: Prolog
+% Paradigm: Logic
+% ********************
+% Prolog Version: SWI Prolog 8.4.1
+% -----------------------------------
+% To compute for minimum edit distance, call the 'start' predicate as a
+% query and enter required input.
 %
+% Before calling of start, please make sure you have entered and
+% compiled string 1 and string 2 as facts in the knowledge base.
+%------------------------------------------------------------------
+% SAMPLE:
+% To find edit distance of "ab" into "ac", declare these facts and
+% compile:
+% s1(1,a). s1(2,b).
+% s2(1,a). s2(2,c).
+% -----------------------------------------------------------------
 %
-%
-% example data
-a(1,a). a(2,b). a(3,c).
+% STRINGS AS FACTS IN KB:
 
-b(1,a). b(2,z).  b(3,c). b(4,e). b(5,d).
-% to find min, c(7,7,Cost),
+s1(1,a). s1(2,b). s1(3,c).  s1(4,d). s1(5,e). s1(6,f).
+s2(1,a). s2(2,z).  s2(3,c). s2(4,e). s2(5,d).
 
-displayS1(N) :- a(N,CharReturned),Next is N-1, displayS1(Next), write(CharReturned).
-displayS1(N) :- N==0.
+% recursive relation for displaying the words of string 1 and string 2.
+displayS1(S1Index) :- s1(S1Index,CharReturned),Next is S1Index-1, displayS1(Next), write(CharReturned).
+displayS1(S1Index) :- S1Index==0.
 
-displayS2(M) :- b(M,CharReturned),Next is M-1, displayS2(Next), write(CharReturned).
-displayS2(M) :- M==0.
-
+displayS2(S2Index) :- s2(S2Index,CharReturned),Next is S2Index-1, displayS2(Next), write(CharReturned).
+displayS2(S2Index) :- S2Index==0.
 
 
 
+% call this to compute and display edit distance
 start :- write('Before proceeding, please make sure you have entered and compiled string 1 and string 2 properly.'),nl,
          write('Please enter the length of the first string:'),read(X),
          write('Please enter the length of the second string:'), read(Y),
          write('String 1: '),displayS1(X),nl,
          write('String 2: '),displayS2(Y),nl,
-         c(X,Y,C,Edits),write('Minimum edit ditance cost: '), write(C), nl,
+         edit_distance(X,Y,Cost,Edits),write('Minimum edit ditance cost: '), write(Cost), nl,
          write('Edits done: '),write(Edits).
 
-c(0,0,Res,Edits) :- Res=0, Edits = " ".
-% must insert M items
-c(0,M,Res,Edits) :- M > 0, Res=M,Edits = " ".
-% must delete N items
-c(N,0,N,Edits) :- N > 0, Edits = " ".
-c(N,M,C,Edits) :- N > 0, M > 0,
+% base cases (prevents index of s1 and s2 from going below 1)
+edit_distance(0,0,Res,Edits) :- Res=0, Edits = " ".
 
-        N1 is N-1, M1 is M-1,
+edit_distance(0,S2Index,Res,Edits) :- S2Index > 0, Res=S2Index,Edits = " ".
 
-        c(N1,M,C1,Edits1), C1a is C1+1, atom_concat(Edits1,"  Delete:",Edits10) ,a(N ,CharReturned),
+edit_distance(S1Index,0,S1Index,Edits) :- S1Index > 0, Edits = " ".
+
+% recursive case
+edit_distance(S1Index,S2Index,FinalCost,Edits) :- S1Index > 0, S2Index > 0,
+
+        % decrement index for both strings
+        DecS1 is S1Index-1, DecS2 is S2Index-1,
+
+        % simulate deletion of char at index S1Index
+        edit_distance(DecS1,S2Index,Res1,Edits1), Cost1 is Res1+1, atom_concat(Edits1,"  Delete:",Edits10) ,
+        s1(S1Index ,CharReturned),
         term_to_atom(CharReturned,EditsChar),
-        atom_concat(Edits10,EditsChar,Edits101),Edits100=Edits101,      % insert into A
-        c(N,M1,C2,Edits2), C2a is C2+1,atom_concat(Edits2,"  Insert:",Edits20), b(M,CharReturned2),
-        term_to_atom(CharReturned2,EditsChar2),atom_concat(Edits20,EditsChar2,Edits202),Edits200=Edits202,   % delete from B
-        c(N1,M1,C3,Edits3),                 % replace
+        atom_concat(Edits10,EditsChar,Edits101),Edits100=Edits101,
+
+        % simulate inserting of char from index S2Index
+        edit_distance(S1Index,DecS2,Res2,Edits2), Cost2 is Res2+1,atom_concat(Edits2,"  Insert:",Edits20),
+        s2(S2Index,CharReturned2),
+        term_to_atom(CharReturned2,EditsChar2),atom_concat(Edits20,EditsChar2,Edits202),
+        Edits200=Edits202,
+
+        % simulate copy and replacing (replace char at index S1Index with char at index S2Index, or copy)
+        edit_distance(DecS1,DecS2,Res3,Edits3),
          % if the variable B is equal to A,it means that they are currenty the same (COPY, no
-         % cost) OR it has to be replaced (which has a cost of 1).
-                a(N,A), b(M,B), (A==B
-                                -> C3a=C3,Edits300=Edits3;
-                                   C3a is C3+1, atom_concat(Edits3, "  Replace:",Edits30), a(N,CharReturned3),
-                                   b(M,CharReturned3V2),
+         % cost) OR it has to be replaced (which has s1 cost of 1).
+                s1(S1Index,A), s2(S2Index,B), (A==B
+                                -> Cost3=Res3,Edits300=Edits3;
+                                   Cost3 is Res3+1,
+                                   atom_concat(Edits3, "  Replace:",Edits30), s1(S1Index,CharReturned3),
+                                   s2(S2Index,CharReturned3V2),
                                    term_to_atom(CharReturned3,EditsChar3),term_to_atom(CharReturned3V2,EditsChar3V2),
                                    atom_concat(Edits30,EditsChar3,InsertWithHere),
                                    atom_concat(InsertWithHere," with ",InsertCharToRepWith),
                                    atom_concat(InsertCharToRepWith,EditsChar3V2,EditsChar303),
                                    Edits300=EditsChar303),
-                min(C1a,C2a,Cm1,Edits100,Edits200,Editscm1), min(Cm1,C3a,C,Editscm1,Edits300,Edits).       % take best of 3 ways
 
+         %get minimum of all 3, take that as the final cost or the next popped iteration of indices
+         min(Cost1,Cost2,CostPH,Edits100,Edits200,EditsPH), min(CostPH,Cost3,FinalCost,EditsPH,Edits300,Edits).
+
+% MINIMUM is assigned to Z and EditsZ
 % if X is less than or equal to Y, then MIN is X. Otherwise, MIN is Y.
+% Appropriate Edits that lead to MIN should be assigned as the MIN edit.
 min(X,Y,Z,EditsX,EditsY,EditsZ) :- X =< Y -> Z=X,EditsZ=EditsX ; Z=Y,EditsZ=EditsY.
